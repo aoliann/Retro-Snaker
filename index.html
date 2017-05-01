@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>js代码制作贪吃蛇游戏分游戏等级哦</title>
+<meta name="description" content="js代码制作一款简单的贪吃蛇游戏，可用键盘控制上下左右方向移动，贪吃蛇分游戏等级哦。js特效。" />
+
+<style type="text/css">
+*{margin:0;padding:0;list-style-type:none;}
+a,img{border:0;}
+</style>
+<script type="text/javascript">
+var snakes = new Array();
+var runDivObj = null;
+var runDivWidth = 600; //（可以修改）是snakeWidth 整数倍 ,大于 300
+var snakeWidth = 20; //（可以修改）
+var dir = "left"; // top buttom left right;
+var fruit = null;
+var timerId;
+var timerInterval = 300; //间隔时间（毫秒）
+var level = 0;
+var checked = false;
+
+window.onload = function (){
+    runDivObj = document.getElementById("runDiv");
+    runDivObj.style.width = runDivWidth + "px";
+    runDivObj.style.height = runDivWidth + "px";
+    init();
+    //move();
+    timerId = setInterval(move, timerInterval);
+}
+
+function init(){
+    var oneSnake = createDiv(200,snakeWidth * 2);
+    snakes.push(oneSnake);
+    runDivObj.appendChild(oneSnake);
+
+    var oneSnake = createDiv(200 + snakeWidth,snakeWidth * 2);
+    snakes.push(oneSnake);
+    runDivObj.appendChild(oneSnake);
+
+    var oneSnake = createDiv(200 + snakeWidth + snakeWidth,snakeWidth * 2);
+    snakes.push(oneSnake);
+    runDivObj.appendChild(oneSnake);
+
+    addFruit();
+}
+
+function createDiv(left,top){
+    var div = document.createElement("div");
+    div.style.position = "absolute";
+    div.style.width = snakeWidth + "px";
+    div.style.height = snakeWidth + "px";
+    div.style.left = left + "px";
+    div.style.top = top + "px";
+    div.style.backgroundColor = "red";
+    div.style.border = "solid 1px aqua";
+    return div;
+}
+
+function move(){
+    for(var i = snakes.length - 1 ; i > 0  ;i--){
+        var s = snakes[i];
+        var s2 = snakes[i-1];
+        s.style.left = parseInt(s2.style.left) + "px";
+        s.style.top = parseInt(s2.style.top) + "px";
+    }
+    var ss = snakes[0];
+    if(dir == "left"){
+        ss.style.left =  (parseInt(ss.style.left) - snakeWidth) + "px";
+    } else if(dir == "right"){
+        ss.style.left =  (parseInt(ss.style.left) + snakeWidth) + "px";
+    } else if(dir == "top"){
+        ss.style.top =  (parseInt(ss.style.top) - snakeWidth) + "px";
+    }else if(dir == "buttom"){
+        ss.style.top =  (parseInt(ss.style.top) + snakeWidth) + "px";
+    }
+    checkHit();
+}
+
+
+function checkHit(){
+    var first = snakes[0];
+    var fruitLeft = parseInt(fruit.style.left);
+    var fruitTop = parseInt(fruit.style.top);
+    var firstLeft = parseInt(first.style.left);
+    var firstTop = parseInt(first.style.top);
+
+    if(firstLeft == - snakeWidth || firstLeft == runDivWidth || firstTop == - snakeWidth || firstTop == runDivWidth){
+        clearInterval(timerId);
+        alert("哈哈，你挂了！");
+window.close();
+        return;
+    }
+    for(var i = 1; i < snakes.length ; i++){
+        var s = snakes[i];
+        if(firstLeft == parseInt(s.style.left) && firstTop == parseInt(s.style.top)){
+            clearInterval(timerId);
+            alert("哈哈，你挂了！");
+window.close();
+            return;
+        }
+    }
+
+    if((dir == "buttom" && (fruitTop - firstTop == snakeWidth) && fruitLeft == firstLeft) ||
+       (dir == "top" && (fruitTop - firstTop == -snakeWidth) && fruitLeft == firstLeft) ||
+       (dir == "right" && (fruitLeft - firstLeft == snakeWidth) && fruitTop == firstTop)||
+       (dir == "left" && (fruitLeft - firstLeft == -snakeWidth) && fruitTop == firstTop)){
+
+        var temp = new Array();
+        temp.push(fruit);
+        snakes = temp.concat(snakes);
+
+        addFruit();
+    }
+    setLevel();
+    checked = true;
+}
+
+function setLevel(){
+    var temp = Math.floor(snakes.length / 5);
+    if(temp > level){
+        level = temp;
+        clearInterval(timerId);
+        timerId = setInterval(move, timerInterval - level * 10);
+    }
+    document.getElementById("level").innerHTML = "等级:" + level;
+}
+
+function addFruit(){
+    var left = Math.floor(Math.random() * (Math.floor(400/snakeWidth) - 1) + 1) * snakeWidth;
+    var top = Math.floor(Math.random() * (Math.floor(400/snakeWidth) - 1) + 1) * snakeWidth;
+    for(var i = 0; i < snakes.length ; i++){
+        var s = snakes[i];
+        if(left == parseInt(s.style.left) && top == parseInt(s.style.top)){
+            addFruit();
+            return;
+        }
+    }
+
+    fruit = createDiv(left,top)
+    runDivObj.appendChild(fruit);
+}
+
+function onKeyupEvent(event){
+    if(checked){
+        var code = event.keyCode
+        if(code == 38 && dir != "buttom"){
+            dir = "top";
+        }else if(code == 40 && dir != "top"){
+            dir = "buttom";
+        }else if(code == 37 && dir != "right"){
+            dir = "left";
+        }else if(code == 39 && dir != "left"){
+            dir = "right";
+        }
+        checkHit();
+    }
+    checked = false;
+}
+</script>
+
+</head>
+
+<body onkeyup="onKeyupEvent(event)">
+
+    <div id="runDiv" style="background-color:#000;"></div>
+    <label id="level"></label>
+
+</body>
+</html>
